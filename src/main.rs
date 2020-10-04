@@ -17,8 +17,8 @@ fn main() {
 	println!("Adding {} to {} department...", name, dep);
 	add_manp(&mut db, dep, name);
 
-	//    println!("Listing the dabase...");
-	//    list_manp(db);
+	println!("Listing the dabase...");
+	list_manp(&db);
     }
 }
 
@@ -52,9 +52,24 @@ fn prompt(entry: Entry) -> String {
     return input;
 }
 
+// add a name to a department
 fn add_manp(db: &mut HashMap<String, Vec<String>>, dep: String, name: String) {
     let empty = Vec::new(); // Vec<String>, does not need to be mutable...
     let val = db.entry(dep).or_insert(empty);
     (*val).push(name);
     println!("vector: {:?}", val);
+}
+
+// list ALL names in ALL departments
+fn list_manp(db: &HashMap<String, Vec<String>>) {
+    for (dep, list) in db {
+	println!("{} Department:", dep);
+
+	let it = list.iter().enumerate();
+
+	for (idx, val) in it {
+	    let s = format!("{}. {}", idx + 1, val); // idx starts from 0, so make it starts from 1
+	    println!("{}", s);
+	}
+    }
 }
