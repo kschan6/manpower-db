@@ -26,9 +26,13 @@ fn main() {
 	}
     }
 
-    println!("Listing names by department...");
+    println!("Listing names of all departments...");
     let dep_sorted = sort_dep(&db);
-    list_manp_dep(&mut db, &dep_sorted);
+    list_manp_all(&mut db, &dep_sorted);
+
+    println!("Listing names of a single department...");
+    let dep = prompt_dep();
+    list_manp_dep(&db, &dep);
 }
 
 fn prompt(entry: Entry) -> String {
@@ -89,6 +93,34 @@ fn prompt_end() -> bool {
     }
 }
 
+// prompt for a department name
+fn prompt_dep() -> String {
+    print!("What department? > ");
+
+    match io::stdout().flush() {
+	Ok(_val) => (),
+	Err(_e) => {
+	    println!("Unable to flush stdout! exit abnormally");
+	    std::process::exit(-1);
+	}
+    }
+
+    // get user input
+    let mut input = String::new();
+    match io::stdin().read_line(&mut input) {
+	Ok(_) => (),
+	Err(e) => println!("Error reading input: {}", e)
+    }
+
+    // remove the trailing newline
+    let it = input.chars();
+    if it.last() == Some('\n') {
+	input.pop();
+    }
+    
+    return input;
+}
+
 // add a name to a department
 fn add_manp(db: &mut HashMap<String, Vec<String>>, dep: String, name: String) {
     let empty = Vec::new(); // Vec<String>, does not need to be mutable...
@@ -123,8 +155,8 @@ fn sort_dep(db: &HashMap<String, Vec<String>>) -> Vec<String> {
     v
 }
 
-// list names based on SORTED department names
-fn list_manp_dep(db: &mut HashMap<String, Vec<String>>, deps: &Vec<String>) {
+// list names of all departments (the deparment names are sorted)
+fn list_manp_all(db: &mut HashMap<String, Vec<String>>, deps: &Vec<String>) {
     for dep in deps {
 	println!("{} Department:", dep);
 
@@ -138,4 +170,17 @@ fn list_manp_dep(db: &mut HashMap<String, Vec<String>>, deps: &Vec<String>) {
 	}
 	println!();
    }
+}
+
+// list names of a single department
+fn list_manp_dep(db: &HashMap<String, Vec<String>>, dep: &String) {
+    match db.get(dep) {
+	Some(names) => {
+	    for (idx, name) in names.iter().enumerate() {
+		println!("{}. {}", idx + 1, name);
+	    }
+	},
+
+	None => println!("No entry in {} department", dep)
+    }
 }
