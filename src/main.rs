@@ -17,8 +17,12 @@ fn main() {
 	println!("Adding {} to {} department...", name, dep);
 	add_manp(&mut db, dep, name);
 
-	println!("Listing the dabase...");
-	list_manp(&db);
+	// println!("Listing the dabase...");
+	// list_manp(&db);
+
+	println!("Listing names by department...");
+	let dep_sorted = sort_dep(&db);
+	list_manp_dep(&db, &dep_sorted);
     }
 }
 
@@ -57,11 +61,11 @@ fn add_manp(db: &mut HashMap<String, Vec<String>>, dep: String, name: String) {
     let empty = Vec::new(); // Vec<String>, does not need to be mutable...
     let val = db.entry(dep).or_insert(empty);
     (*val).push(name);
-    println!("vector: {:?}", val);
+//    println!("vector: {:?}", val);
 }
 
 // list ALL names in ALL departments
-fn list_manp(db: &HashMap<String, Vec<String>>) {
+fn _list_manp(db: &HashMap<String, Vec<String>>) {
     for (dep, list) in db {
 	println!("{} Department:", dep);
 
@@ -72,4 +76,29 @@ fn list_manp(db: &HashMap<String, Vec<String>>) {
 	    println!("{}", s);
 	}
     }
+}
+
+// sort department names in the database
+fn sort_dep(db: &HashMap<String, Vec<String>>) -> Vec<&String> {
+    let mut v = Vec::new();
+    
+    for k in db.keys() {
+	v.push(k);
+    }
+
+    v.sort();
+    v
+}
+
+// list names based on SORTED department names
+fn list_manp_dep(db: &HashMap<String, Vec<String>>, deps: &Vec<&String>) {
+    for dep in deps {
+	println!("{} Department:", dep);
+	if let Some(names) = db.get(*dep) {
+	    for (idx, name) in names.iter().enumerate() {
+		println!("{}. {}", idx + 1, name);
+	    }
+	}
+	println!();
+   }
 }
