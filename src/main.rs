@@ -22,7 +22,7 @@ fn main() {
 
 	println!("Listing names by department...");
 	let dep_sorted = sort_dep(&db);
-	list_manp_dep(&db, &dep_sorted);
+	list_manp_dep(&mut db, &dep_sorted);
     }
 }
 
@@ -79,11 +79,11 @@ fn _list_manp(db: &HashMap<String, Vec<String>>) {
 }
 
 // sort department names in the database
-fn sort_dep(db: &HashMap<String, Vec<String>>) -> Vec<&String> {
+fn sort_dep(db: &HashMap<String, Vec<String>>) -> Vec<String> {
     let mut v = Vec::new();
     
     for k in db.keys() {
-	v.push(k);
+	v.push(k.clone()); // we create new strings rather than borrowing from the hash map
     }
 
     v.sort();
@@ -91,10 +91,14 @@ fn sort_dep(db: &HashMap<String, Vec<String>>) -> Vec<&String> {
 }
 
 // list names based on SORTED department names
-fn list_manp_dep(db: &HashMap<String, Vec<String>>, deps: &Vec<&String>) {
+fn list_manp_dep(db: &mut HashMap<String, Vec<String>>, deps: &Vec<String>) {
     for dep in deps {
 	println!("{} Department:", dep);
-	if let Some(names) = db.get(*dep) {
+
+	// need to get a mutable refence to call sort()
+	if let Some(names) = db.get_mut(dep) {
+	    names.sort();
+	    
 	    for (idx, name) in names.iter().enumerate() {
 		println!("{}. {}", idx + 1, name);
 	    }
