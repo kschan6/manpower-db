@@ -13,17 +13,22 @@ fn main() {
     loop {
 	let dep = prompt(Entry::Department);
 	let name = prompt(Entry::Name);
-	
+
 	println!("Adding {} to {} department...", name, dep);
 	add_manp(&mut db, dep, name);
+	println!();
 
 	// println!("Listing the dabase...");
 	// list_manp(&db);
 
-	println!("Listing names by department...");
-	let dep_sorted = sort_dep(&db);
-	list_manp_dep(&mut db, &dep_sorted);
+	if prompt_end() {
+	    break;
+	}
     }
+
+    println!("Listing names by department...");
+    let dep_sorted = sort_dep(&db);
+    list_manp_dep(&mut db, &dep_sorted);
 }
 
 fn prompt(entry: Entry) -> String {
@@ -54,6 +59,34 @@ fn prompt(entry: Entry) -> String {
     }
     
     return input;
+}
+
+// check for user's willingness to add the next entry
+fn prompt_end() -> bool {
+    print!("Next entry (Y or N)? > ");
+
+    match io::stdout().flush() {
+	Ok(_val) => (),
+	Err(_e) => {
+	    println!("Unable to flush stdout! exit abnormally");
+	    std::process::exit(-1);
+	}
+    }
+
+    // get user input
+    let mut input = String::new();
+    match io::stdin().read_line(&mut input) {
+	Ok(_) => (),
+	Err(e) => println!("Error reading input: {}", e)
+    }
+
+    // an input starting with a y (case-insensitive) means user does NOT want to end
+    let mut it = input.chars();
+    if let Some('Y') | Some('y') = it.next() {
+	false
+    } else {
+	true
+    }
 }
 
 // add a name to a department
