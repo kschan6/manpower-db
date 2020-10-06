@@ -6,6 +6,12 @@ enum Entry {
     Name
 }
 
+enum Listing {
+    None,
+    Department,
+    All
+}
+
 fn main() {
     println!("Hello, manpower-db!");
     let mut db = HashMap::new();
@@ -26,15 +32,26 @@ fn main() {
 	}
     }
 
-    println!("Listing names of all departments...");
-    let dep_sorted = sort_dep(&db);
-    list_manp_all(&mut db, &dep_sorted);
+    match prompt_list() {
+	Listing::All => {
+	    println!("Listing names of all departments...");
+	    let dep_sorted = sort_dep(&db);
+	    list_manp_all(&mut db, &dep_sorted);
+	},
 
-    println!("Listing names of a single department...");
-    let dep = prompt_dep();
-    list_manp_dep(&db, &dep);
+	Listing::Department => {
+	    println!("Listing names of a single department...");
+	    let dep = prompt_dep();
+	    list_manp_dep(&mut db, &dep);
+	}
+
+	_ => {
+	    println!("Not going to list the entry. Bye");
+	}
+    }
 }
 
+// prompt user for adding an entry
 fn prompt(entry: Entry) -> String {
     match entry {
 	Entry::Department => print!("Enter a Department > "),
@@ -121,6 +138,44 @@ fn prompt_dep() -> String {
     return input;
 }
 
+// prompt for the listing type
+fn prompt_list() -> Listing {
+    println!("How do you want to list the names?");
+    println!("1. By department");
+    println!("2. All the names");
+    print!("Your selection > ");
+
+    match io::stdout().flush() {
+	Ok(_val) => (),
+	Err(_e) => {
+	    println!("Unable to flush stdout! exit abnormally");
+	    std::process::exit(-1);
+	}
+    }
+
+    // get user input
+    let mut input = String::new();
+    match io::stdin().read_line(&mut input) {
+	Ok(_) => (),
+	Err(e) => println!("Error reading input: {}", e)
+    }
+
+    // remove the trailing newline
+    let it = input.chars();
+    if it.last() == Some('\n') {
+	input.pop();
+    }
+
+    match &input[..] {
+	"1" => Listing::Department,
+	"2" => Listing::All,
+	_ => {
+	    println!("Invalid selection!");
+	    Listing::None
+	}
+    }
+}
+
 // add a name to a department
 fn add_manp(db: &mut HashMap<String, Vec<String>>, dep: String, name: String) {
     let empty = Vec::new(); // Vec<String>, does not need to be mutable...
@@ -173,9 +228,11 @@ fn list_manp_all(db: &mut HashMap<String, Vec<String>>, deps: &Vec<String>) {
 }
 
 // list names of a single department
-fn list_manp_dep(db: &HashMap<String, Vec<String>>, dep: &String) {
-    match db.get(dep) {
-	Some(names) => {
+fn list_manp_dep(db: &mut HashMap<String, Vec<String>>, dep: &String) {
+    match db.get_mut(dep) {
+	Some(names) => { // names is &mut Vec<String>
+	    names.sort();
+	    
 	    for (idx, name) in names.iter().enumerate() {
 		println!("{}. {}", idx + 1, name);
 	    }
